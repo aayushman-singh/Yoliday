@@ -31,8 +31,14 @@ const links = [
     icon: UserCircle,
   },
 ];
+interface SidebarProps {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  className?: string
+}
 
-export function Sidebar({ className = "" }: { className?: string }) {
+export function Sidebar({ open, setOpen, className }: SidebarProps) {
+
   const pathname = usePathname();
 
   // Determine which link should be active

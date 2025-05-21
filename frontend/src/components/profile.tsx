@@ -7,7 +7,7 @@ import { Header } from "../components/header";
 import { MobileNavigation } from "@/components/mobile-navigation";
 import { User, Mail, Phone, MapPin, Edit, Save, X } from "lucide-react";
 
-const baseUrl = "http://localhost:8000";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 export function Profile() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -104,7 +104,11 @@ export function Profile() {
         {value}
       </dd>
     );
-
+    interface SidebarProps {
+      open: boolean;
+      setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    }
+    
   return (
     <div className="flex h-screen bg-gray-100">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />

@@ -48,7 +48,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
       <div className="relative h-48">
         <Image
           src={
-            project.image ? `${baseUrl}${project.image}` : "/placeholder.svg"
+            project.image ? `${project.image}` : "/placeholder.svg"
           }
           alt={project.title}
           fill
