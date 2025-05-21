@@ -8,6 +8,5 @@ export const useProjects = (page: number) => {
       if (!res.ok) throw new Error("Failed to fetch projects");
       return res.json();
     },
-    keepPreviousData: true,
   });
 };
