@@ -75,7 +75,7 @@ export function ProjectList({
           (data.projects || data.cart || []).map((p: any) => ({
             ...p,
             date: p.date,
-            image: p.image_url,
+            image: p.image,
           }))
         );
       } catch (err) {
