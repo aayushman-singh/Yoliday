@@ -241,26 +241,27 @@ export function ProjectList({
         </div>
       )}
 
-      {/* Pagination - Only show if we have projects and we're not loading */}
+      {/* Pagination */}
       {!isLoading && projects.length > 0 && (
         <div className="mt-6 flex justify-center gap-4">
           <button
             onClick={() => setPage(Math.max(page - 1, 1))}
             disabled={page === 1}
-            className="px-4 py-2 border rounded disabled:opacity-50"
+            className="px-4 py-2 border rounded-md bg-white text-gray-800 hover:bg-amber-100 disabled:opacity-50 disabled:hover:bg-white disabled:cursor-not-allowed shadow-sm transition-colors duration-200"
           >
             Previous
           </button>
-          <span className="text-sm mt-2">Page {page}</span>
+          <span className="text-sm flex items-center font-medium">
+            Page {page}
+          </span>
           <button
             onClick={() => setPage(page + 1)}
-            className="px-4 py-2 border rounded"
+            className="px-4 py-2 border rounded-md bg-white text-gray-800 hover:bg-amber-100 shadow-sm transition-colors duration-200"
           >
             Next
           </button>
         </div>
       )}
-
       {/* Filter Button - Mobile Fixed */}
       <div className="fixed bottom-16 left-0 right-0 px-4 md:hidden z-30 flex justify-center">
         <div className="w-full max-w-[200px]">
