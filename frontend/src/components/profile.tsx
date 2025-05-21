@@ -68,7 +68,11 @@ export function Profile() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(editData),
+        body: JSON.stringify({
+          ...editData,
+          skills: JSON.stringify(editData.skills),
+          tags: JSON.stringify(editData.tags),
+        })
       });
 
       if (response.ok) {
