@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["localhost", "picsum.photos"], // strips ports for domain approval
   },
+  basePath: "/dashboard",
 };
 
 export default nextConfig;

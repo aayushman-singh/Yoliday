@@ -1,10 +1,8 @@
 import { db } from "../db";
-import { RowDataPacket } from "mysql2"; // Import appropriate type
+import { RowDataPacket, OkPacket } from "mysql2";
 
-// Define an interface for your profile row data
-interface ProfileRow extends RowDataPacket {
+interface ProfileDbRow extends RowDataPacket {
   id: number;
-  user_id: number;
   name: string | null;
   title: string | null;
   email: string | null;
@@ -14,105 +12,137 @@ interface ProfileRow extends RowDataPacket {
   department: string | null;
   joined_date: string | null;
   profile_image_url: string | null;
-
-   skills: string | null; 
-   tags: string | null;   
+  skills: string | null;
+  tags: string | null;
 }
 
-export async function getProfileData(
-  userId: number
-): Promise<Record<string, any> | null> {
-  // Return null if not found
-  const [rows] = await db.query<ProfileRow[]>( // Type the query result
+interface ProfileApiObject {
+  id: number;
+  name: string | null;
+  title: string | null;
+  email: string | null;
+  phone: string | null;
+  location: string | null;
+  jobTitle: string | null;
+  department: string | null;
+  joinedDate: string | null;
+  skills: any[] | null;
+  tags: any[] | null;
+  profileImage: string | null;
+}
+
+const SINGLE_PROFILE_ID = 1;
+
+export async function getProfileData(): Promise<ProfileApiObject | null> {
+  const [rows] = await db.query<ProfileDbRow[]>(
     `SELECT 
-        id,
-        user_id,
-        name, 
-        title, 
-        email, 
-        phone,
-        location,
-        job_title,
-        department,
-        joined_date,
-        skills,  -- Make sure you are selecting skills
-        tags,    -- Make sure you are selecting tags
-        profile_image_url
+        id, name, title, email, phone, location, job_title,
+        department, joined_date, skills, tags, profile_image_url
        FROM profile
-       WHERE user_id = ?
+       WHERE id = ? 
        LIMIT 1`,
-    [userId]
+    [SINGLE_PROFILE_ID]
   );
 
-  if (!rows || rows.length === 0) {
+  if (!rows?.length) return null;
 
-    return null; 
-  }
   const dbRecord = rows[0];
 
-
-  const record = { ...dbRecord };
-
-  const returnedProfile = {
-    id: record.id,
-    userId: record.user_id, 
-    name: record.name,
-    title: record.title,
-    email: record.email,
-    phone: record.phone,
-    location: record.location,
-    jobTitle: record.job_title, 
-    department: record.department,
-    joinedDate: record.joined_date
-      ? new Date(record.joined_date).toISOString().split("T")[0]
-      : null, 
-    skills: record.skills, 
-    tags: record.tags, 
-    profileImage: record.profile_image_url, 
+  return {
+    id: dbRecord.id,
+    name: dbRecord.name,
+    title: dbRecord.title,
+    email: dbRecord.email,
+    phone: dbRecord.phone,
+    location: dbRecord.location,
+    jobTitle: dbRecord.job_title,
+    department: dbRecord.department,
+    joinedDate: dbRecord.joined_date
+      ? new Date(dbRecord.joined_date).toISOString().split("T")[0]
+      : null,
+    skills: dbRecord.skills ? JSON.parse(dbRecord.skills) : null,
+    tags: dbRecord.tags ? JSON.parse(dbRecord.tags) : null,
+    profileImage: dbRecord.profile_image_url,
   };
-
-  return returnedProfile;
 }
 
 export const updateProfileData = async (
-  userId: number,
-  updates: Record<string, any> 
-) => {
-  const fields = Object.keys(updates);
+  updates: Record<string, any>
+): Promise<OkPacket> => {
+  const columnMapping: Record<string, string> = {
+    name: "name",
+    title: "title",
+    email: "email",
+    phone: "phone",
+    location: "location",
+    jobTitle: "job_title",
+    department: "department",
+    joinedDate: "joined_date",
+    skills: "skills",
+    tags: "tags",
+    profileImage: "profile_image_url",
+  };
 
+  const jsonDbFields = ["skills", "tags"];
+  const setClauses: string[] = [];
+  const values: any[] = [];
 
-  const jsonDbFields = ["skills", "tags"]; 
+  for (const apiKey in updates) {
+    if (
+      Object.prototype.hasOwnProperty.call(updates, apiKey) &&
+      columnMapping[apiKey]
+    ) {
+      const dbColumn = columnMapping[apiKey];
+      let value = updates[apiKey];
 
-  const setClauses = fields.map((field) => `${field} = ?`).join(", ");
-  const query = `UPDATE profile SET ${setClauses} WHERE user_id = ?`;
-
-  const values = [
-    ...fields.map((field) => {
-      const value = updates[field];
-      if (field === "joined_date" && value instanceof Date) {
-        return value.toISOString().slice(0, 10);
+      if (dbColumn === "joined_date") {
+        if (value instanceof Date) {
+          value = value.toISOString().slice(0, 10);
+        } else if (
+          typeof value === "string" &&
+          value.match(/^\d{4}-\d{2}-\d{2}/)
+        ) {
+          value = value.slice(0, 10);
+        } else if (value === null || value === "") {
+          value = null;
+        } else {
+          continue;
+        }
+      } else if (jsonDbFields.includes(dbColumn)) {
+        if (
+          Array.isArray(value) ||
+          (typeof value === "object" && value !== null)
+        ) {
+          value = JSON.stringify(value);
+        } else if (value === null) {
+          value = null;
+        } else {
+          continue;
+        }
       }
-      if (
-        jsonDbFields.includes(field) &&
-        (Array.isArray(value) || (typeof value === "object" && value !== null))
-      ) {
-        return JSON.stringify(value); 
-      }
-      return value; 
-    }),
-    userId,
-  ];
 
-  console.log("Update Query:", query);
-  console.log("Update Values:", JSON.stringify(values, null, 2));
+      setClauses.push(`${dbColumn} = ?`);
+      values.push(value);
+    }
+  }
+
+  if (!setClauses.length) {
+    return {
+      affectedRows: 0,
+      insertId: 0,
+      warningStatus: 0,
+      serverStatus: 0,
+      changedRows: 0,
+    } as unknown as OkPacket;
+  }
+
+  values.push(SINGLE_PROFILE_ID);
+  const query = `UPDATE profile SET ${setClauses.join(", ")} WHERE id = ?`;
 
   try {
-    const [result] = await db.query(query, values);
-
-    console.log("Update result:", result);
+    const [result] = await db.query<OkPacket>(query, values);
     return result;
   } catch (error) {
-    console.error("Error updating profile in DB:", error);
-    throw error; 
+    throw error;
   }
 };

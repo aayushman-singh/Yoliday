@@ -21,7 +21,7 @@ type ProjectCardProps = {
   onClick?: () => void;
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:8000";
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 export function ProjectCard({ project, onClick }: ProjectCardProps) {
   const { cart, addToCart, removeFromCart } = useCart();
@@ -37,7 +37,6 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
   const handleSaveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     isSaved ? removeFromSaved(project.id) : addToSaved(project.id);
-    // Removed setIsSaved as it's redundant (state is managed by context)
   };
 
   return (

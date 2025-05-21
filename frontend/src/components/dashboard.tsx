@@ -23,7 +23,7 @@ export function Dashboard() {
   });
 
   useEffect(() => {
-    // Simulate fetching dashboard stats
+
     const fetchStats = async () => {
       try {
         const response = await fetch(
@@ -33,7 +33,7 @@ export function Dashboard() {
           const data = await response.json();
           setStats(data);
         } else {
-          // Fallback to dummy data if API fails
+
           setStats({
             totalProjects: 124,
             activeUsers: 843,
@@ -43,7 +43,7 @@ export function Dashboard() {
         }
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
-        // Fallback to dummy data
+
         setStats({
           totalProjects: 124,
           activeUsers: 843,
