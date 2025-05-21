@@ -62,7 +62,7 @@ export function Sidebar({ open, setOpen, className }: SidebarProps) {
 
   return (
     <div className={`flex w-64 flex-col bg-orange-600 ${className}`}>
-      <div className="flex h-16 items-center pl-4">
+      <div className="flex h-16 pt-10 items-center pl-4">
         <div className="flex items-center">
           <Image
             src="/logo.png" // Path to the logo image in the public folder
