@@ -47,9 +47,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
     >
       <div className="relative h-48">
         <Image
-          src={
-            project.image ? `${project.image}` : "/placeholder.svg"
-          }
+          src={project.image ? `${project.image}` : "/placeholder.svg"}
           alt={project.title}
           fill
           className="object-cover"
@@ -88,7 +86,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               isAdded
                 ? "bg-green-100 text-green-800 hover:bg-green-200"
-                : "bg-gradient-to-br from-orange-400 to-orange-400 via-white text-white hover:brightness-110"
+                : "bg-gradient-to-br from-orange-400 from-0% via-orange-400 via-80% to-white to-100% text-white hover:brightness-110"
             }`}
           >
             {isAdded ? "Added to Cart" : "Add to Cart"}
