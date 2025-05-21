@@ -50,43 +50,25 @@ export async function getProfileData(
   }
   const dbRecord = rows[0];
 
-  // The JSON.parse(JSON.stringify(...)) trick is often used to deep clone or
-  // ensure a plain object, but mysql2 usually returns plain objects anyway for rows.
-  // If you still want it, it's safer now:
-  // const record = JSON.parse(JSON.stringify(dbRecord));
 
-  // Direct assignment is usually fine and more performant:
   const record = { ...dbRecord };
 
-  // --- Your previous error with 'profile_image' might have been here too ---
-  // const returnedProfile = {
-  //   ...record,
-  //   joinedDate: record.joined_date
-  //     ? new Date(record.joined_date).toISOString().split("T")[0]
-  //     : "",
-  //   profileImage: record.profile_image_url, // Corrected from record.profile_image
-  //   // If skills/tags were selected and mysql2 doesn't auto-parse (it usually does for JSON type):
-  //   // skills: record.skills ? JSON.parse(record.skills) : [],
-  //   // tags: record.tags ? JSON.parse(record.tags) : [],
-  // };
-
-  // Simplified return if mysql2 auto-parses JSON columns (skills, tags)
   const returnedProfile = {
     id: record.id,
-    userId: record.user_id, // Consider renaming to camelCase if preferred for JS objects
+    userId: record.user_id, 
     name: record.name,
     title: record.title,
     email: record.email,
     phone: record.phone,
     location: record.location,
-    jobTitle: record.job_title, // Renaming to camelCase
+    jobTitle: record.job_title, 
     department: record.department,
     joinedDate: record.joined_date
       ? new Date(record.joined_date).toISOString().split("T")[0]
-      : null, // Return null instead of empty string for dates if not present
-    skills: record.skills, // Assuming skills is selected and mysql2 parsed it
-    tags: record.tags, // Assuming tags is selected and mysql2 parsed it
-    profileImage: record.profile_image_url, // Using the correct column name
+      : null, 
+    skills: record.skills, 
+    tags: record.tags, 
+    profileImage: record.profile_image_url, 
   };
 
   return returnedProfile;
@@ -94,23 +76,43 @@ export async function getProfileData(
 
 export const updateProfileData = async (
   userId: number,
-  updates: Record<string, any>
+  updates: Record<string, any> 
 ) => {
   const fields = Object.keys(updates);
-  const query = `UPDATE profile SET ${fields
-    .map((f) => `${f} = ?`)
-    .join(", ")} WHERE user_id = ?`;
 
-  // Convert Date types to SQL-friendly format if needed
+
+  const jsonDbFields = ["skills", "tags"]; 
+
+  const setClauses = fields.map((field) => `${field} = ?`).join(", ");
+  const query = `UPDATE profile SET ${setClauses} WHERE user_id = ?`;
+
   const values = [
     ...fields.map((field) => {
-      if (field === "joined_date" && updates[field] instanceof Date) {
-        return updates[field].toISOString().slice(0, 10); // "YYYY-MM-DD"
+      const value = updates[field];
+      if (field === "joined_date" && value instanceof Date) {
+        return value.toISOString().slice(0, 10);
       }
-      return updates[field];
+      if (
+        jsonDbFields.includes(field) &&
+        (Array.isArray(value) || (typeof value === "object" && value !== null))
+      ) {
+        return JSON.stringify(value); 
+      }
+      return value; 
     }),
     userId,
   ];
 
-  await db.query(query, values);
+  console.log("Update Query:", query);
+  console.log("Update Values:", JSON.stringify(values, null, 2));
+
+  try {
+    const [result] = await db.query(query, values);
+
+    console.log("Update result:", result);
+    return result;
+  } catch (error) {
+    console.error("Error updating profile in DB:", error);
+    throw error; 
+  }
 };

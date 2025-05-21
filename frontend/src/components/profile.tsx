@@ -64,7 +64,7 @@ export function Profile() {
   const handleSaveChanges = async () => {
     try {
       const response = await fetch(`${baseUrl}/profile/update`, {
-        method: "POST",
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
