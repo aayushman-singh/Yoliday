@@ -15,7 +15,7 @@ export async function getProfileData(
         job_title,
         department,
         joined_date,
-        profile_image
+        profile_image_url
        FROM profile
        WHERE user_id = ?`,
     [userId]
