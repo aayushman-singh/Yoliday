@@ -18,3 +18,13 @@ export async function getCart() {
   );
   return rows;
 }
+export async function addToSaved(projectId: number) {
+  await db.query("INSERT INTO saved (project_id) VALUES (?)", [projectId]);
+}
+
+export async function getSaved() {
+  const [rows] = await db.query(
+    "SELECT p.* FROM saved c JOIN projects p ON c.project_id = p.id"
+  );
+  return rows;
+}

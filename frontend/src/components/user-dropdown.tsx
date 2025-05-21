@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, User } from "lucide-react";
+import { ChevronDown } from "lucide-react";
+import Image from "next/image";
 
 export function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,24 +32,26 @@ export function UserDropdown() {
           className="flex items-center rounded-full text-sm focus:outline-none"
           onClick={() => setIsOpen(!isOpen)}
         >
-          <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-            <User className="h-5 w-5 text-gray-500" />
+          <div className="relative h-8 w-8 rounded-full overflow-hidden">
+            <Image
+              src="/dp.jpg"
+              alt="User profile"
+              fill // This makes the image fill the container
+              className="object-cover" // Ensures the image covers the area while maintaining aspect ratio
+              sizes="32px" // Optimization hint
+            />
           </div>
-          <span className="ml-2 hidden text-sm font-medium text-gray-700 md:block">
-            John Doe
-          </span>
+          <div className="ml-2 hidden text-sm font-medium text-gray-700 md:block">
+            <p>Jane Doe</p>
+            <p className="text-xs text-gray-500">Manager</p>
+          </div>  
+
           <ChevronDown className="ml-1 h-4 w-4 text-gray-500" />
         </button>
       </div>
 
       {isOpen && (
         <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5">
-          <a
-            href="#"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-          >
-            Your Profile
-          </a>
           <a
             href="#"
             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

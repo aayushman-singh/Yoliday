@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import projectRoutes from "./routes/projectRoutes";
 import path from "path";
+import profileRouter from "./routes/profileRoutes";
 
 export const app = express();
 
@@ -12,3 +13,4 @@ app.use(
   express.static(path.join(__dirname, "..", "public", "images"))
 ); 
 app.use("/", projectRoutes);
+app.use("/profile", profileRouter)
