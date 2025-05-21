@@ -1,37 +1,77 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+
+import React, { createContext, useState, useContext, useEffect } from "react";
 
 type CartContextType = {
   cart: number[];
   addToCart: (id: number) => void;
   removeFromCart: (id: number) => void;
+  clearCart: () => void;
 };
 
 type SavedContextType = {
   saved: number[];
-  addToSaved: (id: number) => void; // Changed from saveItem
-  removeFromSaved: (id: number) => void; // Changed from unsaveItem
+  addToSaved: (id: number) => void;
+  removeFromSaved: (id: number) => void;
+  clearSaved: () => void;
 };
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-
+// Create the contexts
 const CartContext = createContext<CartContextType | undefined>(undefined);
 const SavedContext = createContext<SavedContextType | undefined>(undefined);
 
-export const CartProvider = ({ children }: { children: React.ReactNode }) => {
+// Custom hooks to use the contexts
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+  return context;
+};
+
+export const useSaved = () => {
+  const context = useContext(SavedContext);
+  if (context === undefined) {
+    throw new Error("useSaved must be used within a SavedProvider");
+  }
+  return context;
+};
+
+// Combined provider component
+export const ContentProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  // Cart state
   const [cart, setCart] = useState<number[]>([]);
+
+  // Saved state
   const [saved, setSaved] = useState<number[]>([]);
 
-  // Initialize from localStorage
+  // Load saved data from localStorage on component mount
   useEffect(() => {
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) setCart(JSON.parse(savedCart));
+    const storedCart = localStorage.getItem("cart");
+    const storedSaved = localStorage.getItem("saved");
 
-    const savedItems = localStorage.getItem("saved");
-    if (savedItems) setSaved(JSON.parse(savedItems));
+    if (storedCart) {
+      try {
+        setCart(JSON.parse(storedCart));
+      } catch (error) {
+        console.error("Failed to parse cart from localStorage:", error);
+      }
+    }
+
+    if (storedSaved) {
+      try {
+        setSaved(JSON.parse(storedSaved));
+      } catch (error) {
+        console.error("Failed to parse saved from localStorage:", error);
+      }
+    }
   }, []);
 
-  // Persist to localStorage
+  // Save to localStorage whenever cart or saved change
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
@@ -41,65 +81,44 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   }, [saved]);
 
   // Cart functions
-  const addToCart = async (id: number) => {
+  const addToCart = (id: number) => {
     if (!cart.includes(id)) {
       setCart([...cart, id]);
-      await fetch(`${baseUrl}/cart`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: id }),
-      });
     }
   };
 
   const removeFromCart = (id: number) => {
-    setCart(cart.filter((item) => item !== id));
+    setCart(cart.filter((itemId) => itemId !== id));
   };
 
-  // Saved items functions
-  const addToSaved = async (id: number) => {
-    // Renamed from saveItem
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  // Saved functions
+  const addToSaved = (id: number) => {
     if (!saved.includes(id)) {
       setSaved([...saved, id]);
-      await fetch(`${baseUrl}/saved`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: id }),
-      });
     }
   };
 
-  const removeFromSaved = async (id: number) => {
-    // Renamed from unsaveItem
-    setSaved(saved.filter((item) => item !== id));
-    await fetch(`${baseUrl}/saved/${id}`, {
-      method: "DELETE",
-    });
+  const removeFromSaved = (id: number) => {
+    setSaved(saved.filter((itemId) => itemId !== id));
   };
 
+  const clearSaved = () => {
+    setSaved([]);
+  };
+
+  // Create value objects
+  const cartValue = { cart, addToCart, removeFromCart, clearCart };
+  const savedValue = { saved, addToSaved, removeFromSaved, clearSaved };
+
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart }}>
-      <SavedContext.Provider
-        value={{
-          saved,
-          addToSaved,
-          removeFromSaved,
-        }}
-      >
+    <CartContext.Provider value={cartValue}>
+      <SavedContext.Provider value={savedValue}>
         {children}
       </SavedContext.Provider>
     </CartContext.Provider>
   );
-};
-
-export const useCart = () => {
-  const context = useContext(CartContext);
-  if (!context) throw new Error("useCart must be used inside CartProvider");
-  return context;
-};
-
-export const useSaved = () => {
-  const context = useContext(SavedContext);
-  if (!context) throw new Error("useSaved must be used inside CartProvider");
-  return context;
 };

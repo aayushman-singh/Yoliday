@@ -6,7 +6,7 @@ import { UserDropdown } from "@/components/user-dropdown";
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   return (
     <header className="bg-white shadow">
-      <div className="flex h-16 items-center justify-between px-4">
+      <div className="flex h-16 items-center justify-end px-4">
         <div className="flex items-center md:hidden">
           <button
             type="button"
