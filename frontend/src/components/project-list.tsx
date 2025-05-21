@@ -5,36 +5,49 @@ import { Filter } from "lucide-react";
 import { ProjectCard } from "@/components/project-card";
 import { FilterDropdown } from "@/components/filter-dropdown";
 import { ProjectModal } from "@/components/project-modal";
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
 type ProjectListProps = {
   page: number;
   setPage: (p: number) => void;
   source?: "projects" | "saved";
 };
+type Project = {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  date: string;
+  image: string;
+  domain: string;
+  author: string;
+};
+
+type Filters = {
+  domains: string[];
+  dateSort: "newest" | "oldest" | null;
+};
+
 export function ProjectList({
   page,
   setPage,
   source = "projects",
 }: ProjectListProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [projects, setProjects] = useState([]);
-  const [filters, setFilters] = useState<{
-    domains: string[];
-    dateSort: "newest" | "oldest" | null;
-  }>({ domains: [], dateSort: null });
-
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [filters, setFilters] = useState<Filters>({
+    domains: [],
+    dateSort: null,
+  });
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleApplyFilters = (filters: {
-    domains: string[];
-    dateSort: "newest" | "oldest" | null;
-  }) => {
+  const handleApplyFilters = (filters: Filters) => {
     setFilters(filters);
   };
 
-  const handleCardClick = (project: any) => {
+  const handleCardClick = (project: Project) => {
     setSelectedProject(project);
     setIsModalOpen(true);
   };
@@ -59,7 +72,7 @@ export function ProjectList({
         const data = await res.json();
 
         setProjects(
-          (data.projects || data.cart || []).map((p) => ({
+          (data.projects || data.cart || []).map((p: any) => ({
             ...p,
             date: p.date,
             image: p.image_url,
@@ -98,8 +111,6 @@ export function ProjectList({
 
       {/* Project Cards */}
       <div className="flex flex-col gap-6 pb-28 md:pb-6">
-        {" "}
-        {/* extra bottom space for mobile filter button */}
         {projects.map((project) => (
           <ProjectCard
             key={project.id}
@@ -108,10 +119,11 @@ export function ProjectList({
           />
         ))}
       </div>
+
       {/* Pagination */}
       <div className="mt-6 flex justify-center gap-4">
         <button
-          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          onClick={() => setPage(Math.max(page - 1, 1))}
           disabled={page === 1}
           className="px-4 py-2 border rounded disabled:opacity-50"
         >
@@ -119,7 +131,7 @@ export function ProjectList({
         </button>
         <span className="text-sm mt-2">Page {page}</span>
         <button
-          onClick={() => setPage((p) => p + 1)}
+          onClick={() => setPage(page + 1)}
           className="px-4 py-2 border rounded"
         >
           Next
@@ -129,8 +141,6 @@ export function ProjectList({
       {/* Filter Button - Mobile Fixed */}
       <div className="fixed bottom-16 left-0 right-0 px-4 md:hidden z-30 flex justify-center">
         <div className="w-full max-w-[200px]">
-          {" "}
-          {/* Added container div */}
           <button
             type="button"
             className="w-full inline-flex justify-center items-center rounded-md border border-gray-300 bg-amber-600 px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-amber-500 focus:outline-none"
@@ -141,8 +151,6 @@ export function ProjectList({
           </button>
           {isFilterOpen && (
             <div className="absolute bottom-14 left-0 right-0">
-              {" "}
-              {/* Adjusted positioning */}
               <FilterDropdown
                 onClose={() => setIsFilterOpen(false)}
                 onApply={handleApplyFilters}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, SetStateAction } from "react";
 import { Sidebar } from "../components/sidebar";
 import { Header } from "../components/header";
 import { MobileNavigation } from "../components/mobile-navigation";
@@ -59,7 +59,9 @@ export function Dashboard() {
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <Sidebar className="hidden md:flex" />
+      <Sidebar className="hidden md:flex" open={false} setOpen={function (value: SetStateAction<boolean>): void {
+        throw new Error("Function not implemented.");
+      } } />
 
       {/* Mobile sidebar */}
       {sidebarOpen && (
@@ -69,7 +71,9 @@ export function Dashboard() {
             onClick={() => setSidebarOpen(false)}
           ></div>
           <div className="fixed inset-y-0 left-0 flex w-full max-w-xs flex-col bg-orange-500 pt-5 pb-4">
-            <Sidebar />
+            <Sidebar open={false} setOpen={function (value: SetStateAction<boolean>): void {
+              throw new Error("Function not implemented.");
+            } } />
           </div>
         </div>
       )}
