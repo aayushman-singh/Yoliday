@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import { Check, X } from "lucide-react";
 
 type FilterDropdownProps = {
   onClose: () => void;
@@ -8,88 +9,160 @@ type FilterDropdownProps = {
     domains: string[];
     dateSort: "newest" | "oldest" | null;
   }) => void;
+  currentFilters?: {
+    domains: string[];
+    dateSort: "newest" | "oldest" | null;
+  };
 };
 
-export function FilterDropdown({ onClose, onApply }: FilterDropdownProps) {
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
-  const [dateSort, setDateSort] = useState<"newest" | "oldest" | null>(null);
+const availableDomains = [
+  "Technology",
+  "Healthcare",
+  "Education",
+  "Finance",
+  "Marketing",
+  "Design",
+  "Entertainment",
+];
 
-  const handleCheckbox = (domain: string) => {
-    setSelectedDomains((prev) =>
-      prev.includes(domain)
-        ? prev.filter((d) => d !== domain)
-        : [...prev, domain]
-    );
+export function FilterDropdown({
+  onClose,
+  onApply,
+  currentFilters,
+}: FilterDropdownProps) {
+
+  const [selectedDomains, setSelectedDomains] = useState<string[]>(
+    currentFilters?.domains || []
+  );
+  const [dateSort, setDateSort] = useState<"newest" | "oldest" | null>(
+    currentFilters?.dateSort || null
+  );
+
+  const handleDomainToggle = (domain: string) => {
+    if (selectedDomains.includes(domain)) {
+      setSelectedDomains(selectedDomains.filter((d) => d !== domain));
+    } else {
+      setSelectedDomains([...selectedDomains, domain]);
+    }
   };
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        onClose();
-      }
-    }
+  const handleApply = () => {
+    onApply({
+      domains: selectedDomains,
+      dateSort,
+    });
+    onClose();
+  };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [onClose]);
+  const handleClearAll = () => {
+    setSelectedDomains([]);
+    setDateSort(null);
+  };
 
   return (
-    <div
-      ref={dropdownRef}
-      className="fixed bottom-24 left-1/2 z-50 w-64 -translate-x-1/2 transform rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5
-             sm:absolute sm:bottom-auto sm:left-auto sm:right-0 sm:mt-2 sm:translate-x-0 sm:transform sm:origin-top-right"
-    >
+    <div className="absolute right-0 z-10 mt-2 w-80 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
       <div className="p-4">
-        <h3 className="text-sm font-medium text-gray-900">Domain</h3>
-        <div className="mt-2 space-y-2">
-          {["Frontend", "Backend", "UI/UX", "Graphic Design"].map((domain) => (
-            <div className="flex items-center" key={domain}>
-              <input
-                type="checkbox"
-                checked={selectedDomains.includes(domain)}
-                onChange={() => handleCheckbox(domain)}
-                className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
-              />
-              <label className="ml-2 text-sm text-gray-700">{domain}</label>
-            </div>
-          ))}
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium">Filter Projects</h3>
+          <button
+            type="button"
+            className="text-gray-400 hover:text-gray-500"
+            onClick={onClose}
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
-        <div className="mt-4">
-          <h3 className="text-sm font-medium text-gray-900">Date</h3>
-          <div className="mt-2 space-y-2">
-            {["newest", "oldest"].map((option) => (
-              <div className="flex items-center" key={option}>
+        {/* Domains */}
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Domains</h4>
+          <div className="space-y-2 max-h-40 overflow-y-auto">
+            {availableDomains.map((domain) => (
+              <div key={domain} className="flex items-center">
                 <input
-                  type="radio"
-                  checked={dateSort === option}
-                  onChange={() => setDateSort(option as "newest" | "oldest")}
-                  className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+                  id={`domain-${domain}`}
+                  name={`domain-${domain}`}
+                  type="checkbox"
+                  checked={selectedDomains.includes(domain)}
+                  onChange={() => handleDomainToggle(domain)}
+                  className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                 />
-                <label className="ml-2 text-sm text-gray-700 capitalize">
-                  {option} first
+                <label
+                  htmlFor={`domain-${domain}`}
+                  className="ml-3 text-sm text-gray-600"
+                >
+                  {domain}
                 </label>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="mt-4 flex justify-end">
+        {/* Sort by Date */}
+        <div className="mb-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">
+            Sort by Date
+          </h4>
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <input
+                id="newest"
+                name="dateSort"
+                type="radio"
+                checked={dateSort === "newest"}
+                onChange={() => setDateSort("newest")}
+                className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+              />
+              <label htmlFor="newest" className="ml-3 text-sm text-gray-600">
+                Newest first
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                id="oldest"
+                name="dateSort"
+                type="radio"
+                checked={dateSort === "oldest"}
+                onChange={() => setDateSort("oldest")}
+                className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+              />
+              <label htmlFor="oldest" className="ml-3 text-sm text-gray-600">
+                Oldest first
+              </label>
+            </div>
+            {dateSort && (
+              <div className="flex items-center">
+                <input
+                  id="no-sort"
+                  name="dateSort"
+                  type="radio"
+                  checked={dateSort === null}
+                  onChange={() => setDateSort(null)}
+                  className="h-4 w-4 border-gray-300 text-orange-600 focus:ring-orange-500"
+                />
+                <label htmlFor="no-sort" className="ml-3 text-sm text-gray-600">
+                  No sorting
+                </label>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-between mt-6">
           <button
             type="button"
-            className="rounded-md bg-orange-500 px-3 py-2 text-sm font-medium text-white hover:bg-orange-600"
-            onClick={() => {
-              onApply({ domains: selectedDomains, dateSort });
-              onClose();
-            }}
+            className="text-sm text-gray-600 hover:text-gray-900"
+            onClick={handleClearAll}
           >
-            Apply Filters
+            Clear all
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center rounded-md border border-transparent bg-orange-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none"
+            onClick={handleApply}
+          >
+            Apply
           </button>
         </div>
       </div>
