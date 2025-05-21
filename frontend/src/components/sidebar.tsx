@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import {
   LayoutDashboard,
   FolderKanban,
@@ -58,10 +58,13 @@ export function Sidebar({ className = "" }: { className?: string }) {
     <div className={`flex w-64 flex-col bg-orange-600 ${className}`}>
       <div className="flex h-16 items-center pl-4">
         <div className="flex items-center">
-          <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center">
-            <span className="text-orange-600 font-bold">Y</span>
-          </div>
-          <span className="ml-2 text-white font-bold">YOLIDAY</span>
+          <Image
+            src="/logo.png" // Path to the logo image in the public folder
+            alt="YOLIDAY Logo"
+            width={128} // Set the width you want
+            height={40} // Set the height you want
+            className="object-contain" // Ensures the image retains its aspect ratio
+          />
         </div>
       </div>
 

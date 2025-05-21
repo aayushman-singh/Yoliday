@@ -5,8 +5,18 @@ import { Filter } from "lucide-react";
 import { ProjectCard } from "@/components/project-card";
 import { FilterDropdown } from "@/components/filter-dropdown";
 import { ProjectModal } from "@/components/project-modal";
-const baseUrl=process.env.NEXT_PUBLIC_BASE_URL
-export function ProjectList() {
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+
+type ProjectListProps = {
+  page: number;
+  setPage: (p: number) => void;
+  source?: "projects" | "saved";
+};
+export function ProjectList({
+  page,
+  setPage,
+  source = "projects",
+}: ProjectListProps) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [projects, setProjects] = useState([]);
   const [filters, setFilters] = useState<{
@@ -33,6 +43,7 @@ export function ProjectList() {
     const fetchProjects = async () => {
       try {
         const queryParams = new URLSearchParams();
+        queryParams.append("page", page.toString());
 
         filters.domains.forEach((d) => queryParams.append("domain", d));
         if (filters.dateSort) {
@@ -43,12 +54,12 @@ export function ProjectList() {
         }
 
         const res = await fetch(
-          `${baseUrl}/projects?${queryParams.toString()}`
+          `${baseUrl}/${source}?${queryParams.toString()}`
         );
         const data = await res.json();
 
         setProjects(
-          data.projects.map((p) => ({
+          (data.projects || data.cart || []).map((p) => ({
             ...p,
             date: p.date,
             image: p.image_url,
@@ -60,7 +71,7 @@ export function ProjectList() {
     };
 
     fetchProjects();
-  }, [filters]);
+  }, [filters, page, source]);
 
   return (
     <div>
@@ -96,6 +107,23 @@ export function ProjectList() {
             onClick={() => handleCardClick(project)}
           />
         ))}
+      </div>
+      {/* Pagination */}
+      <div className="mt-6 flex justify-center gap-4">
+        <button
+          onClick={() => setPage((p) => Math.max(p - 1, 1))}
+          disabled={page === 1}
+          className="px-4 py-2 border rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="text-sm mt-2">Page {page}</span>
+        <button
+          onClick={() => setPage((p) => p + 1)}
+          className="px-4 py-2 border rounded"
+        >
+          Next
+        </button>
       </div>
 
       {/* Filter Button - Mobile Fixed */}

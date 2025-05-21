@@ -9,6 +9,7 @@ import { MobileNavigation } from "@/components/mobile-navigation";
 export default function Portfolio() {
   const [activeTab, setActiveTab] = useState("projects");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [page, setPage] = useState(1); // Added pagination state
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -33,9 +34,7 @@ export default function Portfolio() {
 
         <main className="flex-1 overflow-y-auto p-12 pb-24 md:pb-4">
           <div className="mx-auto max-w-7xl">
-            {/* Content container with white background and rounded corners */}
             <div className="bg-white rounded-xl shadow-sm p-6 mb-16 md:mb-4">
-              {/* Heading */}
               <h1 className="text-xl font-semibold text-gray-900 mb-4">
                 Portfolio
               </h1>
@@ -61,15 +60,17 @@ export default function Portfolio() {
                 </nav>
               </div>
 
-              {/* Filter button (desktop only) */}
-              <div className="hidden md:flex justify-end mt-4 mb-4"></div>
+              {/* Filter button (optional) */}
+              <div className="hidden md:flex justify-end mt-4 mb-4" />
 
               {/* Tab content */}
               <div className="mt-2">
-                {activeTab === "projects" && <ProjectList />}
+                {activeTab === "projects" && (
+                  <ProjectList page={page} setPage={setPage} />
+                )}
                 {activeTab === "saved" && (
                   <div className="text-center py-10 text-gray-500">
-                    No saved projects yet
+                    <ProjectList source='saved' page={page} setPage={setPage}/>
                   </div>
                 )}
                 {activeTab === "shared" && (
@@ -87,7 +88,6 @@ export default function Portfolio() {
           </div>
         </main>
 
-        {/* Mobile navigation */}
         <MobileNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
     </div>
