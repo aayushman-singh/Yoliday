@@ -1,31 +1,37 @@
 import {db} from "../db";
 
-export const getProfileData = async (userId: number) => {
-  const [rows] = await db.query(`SELECT * FROM profile WHERE user_id = ?`, [
-    userId,
-  ]);
+export async function getProfileData(
+  userId: number,
+): Promise<Record<string, any>> {
+  const [rows] = await db.query(
+    `SELECT 
+        id,
+        user_id,
+        name, 
+        title, 
+        email, 
+        phone,
+        location,
+        job_title,
+        department,
+        joined_date,
+        profile_image
+       FROM profile
+       WHERE user_id = ?`,
+    [userId]
+  );
 
-  if (rows.length === 0) {
-    throw new Error("Profile not found");
-  }
+  // Must normalize ensured
+  const record = JSON.parse(JSON.stringify(rows[0])); // cleanly creates plain object
 
-  // Safely process dates to avoid hydration issues
-  const profile = rows[0] as Record<string, any>;
   return {
-    name: profile.name,
-    title: profile.title,
-    email: profile.email,
-    phone: profile.phone,
-    location: profile.location,
-    joinedDate: profile.joined_date
-      ? profile.joined_date.toISOString().split("T")[0]
+    ...record,
+    joinedDate: record.joined_date
+      ? new Date(record.joined_date).toISOString().split("T")[0]
       : "",
-    jobTitle: profile.job_title,
-    department: profile.department,
-    profileImage: profile.profile_image,
-    // Only include necessary fields as JSON-safe values
+    profileImage: record.profile_image, // should be full S3 or HTTP-image URLs
   };
-};
+}
 
 export const updateProfileData = async (
   userId: number,

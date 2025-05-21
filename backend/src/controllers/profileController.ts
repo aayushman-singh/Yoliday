@@ -4,22 +4,28 @@ import {
   updateProfileData, 
 } from "../models/profileModel";
 
-// GET /api/profile
 export async function getProfileHandler(req: Request, res: Response) {
-  const userId = 123; // Replace this with real user ID from auth later
+  const userId = 123;
 
   try {
     const profile = await getProfileData(userId);
+    console.log("ESSAY: FRONTEND WILL RECEIVE THIS PROFILE DATA:");
+    console.log(JSON.stringify(profile)); // Shows structure in terminal
     res.status(200).json({ profile });
   } catch (error) {
-    console.error("Error fetching profile:", error);
-    res.status(500).json({ error: "Failed to fetch profile data" });
+    if (error instanceof Error) {
+      console.error("ESSAY: Backend Error:", error.message); // Log meaningful error
+      res.status(500).json({ error: "Failed to fetch profile data" });
+    } else {
+      console.error("ESSAY: Backend Unknown Error:", error);
+      res.status(500).json({ error: "Unexpected server error" });
+    }
   }
 }
 
-// PUT /api/profile/update
+
 export async function updateUserHandler(req: Request, res: Response) {
-  const userId = 123; // Replace with real user ID
+  const userId = 123; 
   const updates = req.body;
 
   try {
