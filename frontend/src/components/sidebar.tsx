@@ -11,22 +11,22 @@ import { usePathname } from "next/navigation";
 
 const links = [
   {
-    href: "/yoliday/dashboard",
+    href: "/dashboard",
     label: "Dashboard",
     icon: LayoutDashboard,
   },
   {
-    href: "/yoliday/",
+    href: "/",
     label: "Portfolio",
     icon: FolderKanban,
   },
   {
-    href: "/yoliday/inputs",
+    href: "/inputs",
     label: "Inputs",
     icon: FileInput,
   },
   {
-    href: "/yoliday/profile",
+    href: "/profile",
     label: "Profile",
     icon: UserCircle,
   },
@@ -52,7 +52,7 @@ export function Sidebar({ open, setOpen, className }: SidebarProps) {
     if (nonPortfolioMatch) return nonPortfolioMatch.href;
 
     // Otherwise check for portfolio match
-    if (pathname === "/yoliday/" || pathname === "/yoliday/portfolio") return "/yoliday/";
+    if (pathname === "/" || pathname === "/portfolio") return "/";
 
     // No matches
     return null;
