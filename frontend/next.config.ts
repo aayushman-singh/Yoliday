@@ -4,7 +4,8 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["localhost", "picsum.photos"], // strips ports for domain approval
   },
-  basePath: "/yoliday"
+  basePath: "/yoliday",
+  trailingSlash: true
 };
 
 export default nextConfig;
